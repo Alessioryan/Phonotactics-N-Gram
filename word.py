@@ -1,6 +1,7 @@
 # This class represents a single word. It is made up of multiple syllables and its length
 # can be measured in the number of syllables it has. Immutable class.
 
+from syllable import Syllable
 
 vowels = "aeiou"
 consonants = "bcdfghjklmnpqrstvwxyz"
@@ -34,12 +35,18 @@ def decompose_word(word):
 
 class Word:
     def __init__(self, word):
-        word = word.lower()
-        self.syllables = decompose_word(word)
+        self.original_word = word.lower()
+        self.syllables = []
+        for text_syllable in decompose_word(self.original_word):
+            self.syllables.append(Syllable(text_syllable) )
         self.num_syllables = len(self.syllables)
 
+    # Kinda janky print but it works ig
     def __str__(self):
-        return str(self.syllables)
+        syllable_list = []
+        for syllable in self.syllables:
+            syllable_list.append(str(syllable) )
+        return self.original_word + " is " + str(syllable_list).replace("\"", "")
 
 
 if __name__ == '__main__':

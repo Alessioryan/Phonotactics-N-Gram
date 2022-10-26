@@ -17,12 +17,20 @@ def decompose_syllable(syllable):
     for letter in vowels:
         if letter in syllable:
             vowel_index = syllable.index(letter)
-            syllable_parts[0] = syllable[0:vowel_index]
-            syllable_parts[1] = syllable[vowel_index]
-            syllable_parts[2] = syllable[vowel_index + 1:]
+            syllable_parts.append(syllable[0:vowel_index] )
+            syllable_parts.append(syllable[vowel_index] )
+            syllable_parts.append(syllable[vowel_index + 1:] )
     return syllable_parts
 
 
 class Syllable:
     def __init__(self, syllable):
         self.syllable_parts = decompose_syllable(syllable)
+
+    def __str__(self):
+        return str(self.syllable_parts)
+
+
+if __name__ == '__main__':
+    test_syllable = Syllable("tes")
+    print(test_syllable)
