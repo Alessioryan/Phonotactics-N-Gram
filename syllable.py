@@ -9,7 +9,7 @@ consonants = "bcdfghjklmnpqrstvwxyz"
 
 
 # Assume this is a valid input
-def decompose_syllable(syllable):
+def decompose_syllable_ex1(syllable):
     # This code would vary language to language. For now, let's assume always syllables
     # with monophthong vowels, with onsets and codas being at most one consonant but potentially null
 
