@@ -186,7 +186,7 @@ def generate_random_sentence(num):
 
 # Cleans a line
 def clean_line(line):
-    return line.replace(",", "").replace(".", "").lower().replace("\n", "").replace("'", "")
+    return line.replace(",", "").replace(".", "").lower().replace("\n", "").replace("'", "").strip(" ")
 
 
 # Helper testing function
