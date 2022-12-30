@@ -1,7 +1,36 @@
-
 from random import randint
 
+
+# It's a token!
+class NGram:
+    def __init__(self, tokens):
+        if type(tokens) == type(""):
+            tokens = [tokens]
+        # Tokens is the tokens of the NGram, whose type is list
+        self.tokens = tokens
+
+    def __eq__(self, other):
+        if type(self) != type(other):
+            raise Exception("Equated different types")
+        if len(self.tokens) != len(other.tokens):
+            return False
+        for index in range(len(self.tokens) ):
+            if self.tokens[index] != other.tokens[index]:
+                return False
+        return True
+
+    def __hash__(self):
+        running_string = ""
+        for token in self.tokens:
+            running_string += token
+        return hash(running_string)
+
+    def __str__(self):
+        return str(self.tokens)
+
+
 # Maps the first part of the n-gram to a set with the [total occurances, {ending1: count1, ending2, count2}]
+# All strings are wrapped in the NGram class
 counts = {}
 
 # The value of the n-gram
@@ -10,8 +39,8 @@ n = -1
 
 # Adds the data provided to counts
 def add_ngram(ngram):
-    start = ngram[0 : n-1]
-    end = ngram[n-1]
+    start = NGram(ngram[0: n - 1])
+    end = NGram(ngram[n - 1])
     if start not in counts:
         counts[start] = [0, {}]
     counts[start][0] += 1
@@ -28,6 +57,7 @@ def parse(file_name):
             if line.replace("\n", "") == "":
                 continue
             line = clean_line(line)
+            line = tokenize(line)
             for i in range(len(line) - n + 1):
                 add_ngram(line[i: i + n])
     file.close()
@@ -35,12 +65,15 @@ def parse(file_name):
 
 # Processes the input file and sets up a count
 def process(file_name, input_n):
+    if input_n > 3 or input_n < 2:
+        raise Exception("Invalid n, currently only n = 2 and n = 3 supported")
     global n
     n = input_n
     parse(file_name)
 
 
 # Generates a random character given the n-1-gram provided
+# Returns an NGram
 def generate_n_minus_1_gram(n_minus_1_gram):
     random_count = randint(1, counts[n_minus_1_gram][0])
     running_count = 0
@@ -53,10 +86,17 @@ def generate_n_minus_1_gram(n_minus_1_gram):
 
 # Generates a random word, starting with " " and ending with " ". Strips " ".
 def generate_random_word():
-    running_string = " " + generate_n_minus_1_gram(" ")
-    while running_string[-1] != ' ':
-        running_string += generate_n_minus_1_gram(running_string[-1] ) # Update accordingly when fitting for n > 2
-    return running_string.strip(" ")
+    if n == 2:
+        running_string = [NGram("<s>")]
+    elif n == 3:
+        running_string = [NGram("< >"), NGram("<s>")]
+    while running_string[-1] != NGram("</s>"):
+        running_string.append(generate_n_minus_1_gram(running_string[-1] ) )  # Update accordingly when fitting for n > 2
+    result_string = ""
+    for ngram in running_string:
+        if ngram != NGram("<s>") and ngram != NGram("</s>") and ngram != NGram("< >"):
+            result_string += ngram.tokens[0]
+    return result_string
 
 
 # Generates a string of words lengthening parameter
@@ -72,20 +112,36 @@ def clean_line(line):
     return " " + line.replace(",", "").replace(".", "").lower().replace("\n", "").replace("'", "").strip(" ") + " "
 
 
+# Tokenizes a sentence according to token type
+def tokenize(line):
+    array = []
+    for index in range(len(line)):
+        if line[index] == ' ':
+            array.append("</s>")
+            array.append("< >")
+            array.append("<s>")
+        else:
+            array.append(line[index])
+    return array
+
+
 # Prints all data collected
 def print_all_data():
     print()
     print("Models are built on a " + str(n) + "gram")
-    print(counts)
     for key in counts:
-        print("Given " + key + ": " + str(counts[key]) )
+        print("Given " + str(key) + ": , which appears " + str(counts[key][0]) + " times")
+        running_string = ""
+        for end in counts[key][1]:
+            running_string += "{" + str(end) + ": " + str(counts[key][1][end]) + "}, "
+        print(running_string.strip(" ") )
     print()
 
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     # CHANGE THIS FOR DATASET SIZE
-    test_set = 10
+    test_set = 2
 
     if test_set == 0:
         input_file = "lipsum_110.txt"
@@ -100,4 +156,5 @@ if __name__ == '__main__':
 
     process(input_file, 2)
     print_all_data()
-    print(generate_random_sentence(100) )
+    print(generate_random_word() )
+    # print(generate_random_sentence(100) )
