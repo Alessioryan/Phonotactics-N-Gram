@@ -65,38 +65,40 @@ def parse(file_name):
 
 # Processes the input file and sets up a count
 def process(file_name, input_n):
-    if input_n > 3 or input_n < 2:
-        raise Exception("Invalid n, currently only n = 2 and n = 3 supported")
+    if input_n > 4 or input_n < 2:
+        raise Exception("Invalid n, currently only 2 <= n <= 4 supported")
     global n
     n = input_n
     parse(file_name)
 
 
 # Generates a random character given the n-1-gram provided
-# Returns an NGram
-def generate_n_minus_1_gram(n_minus_1_gram):
+# Takes a string, returns a string
+def generate_from_n_minus_1(n_minus_1):
+    n_minus_1_gram = NGram(n_minus_1)
     random_count = randint(1, counts[n_minus_1_gram][0])
     running_count = 0
     for ending in counts[n_minus_1_gram][1]:
         running_count += counts[n_minus_1_gram][1][ending]
         if running_count >= random_count:
-            return ending
+            return ending.tokens[0]
     raise Exception("Generation issue")
 
 
 # Generates a random word, starting with " " and ending with " ". Strips " ".
 def generate_random_word():
     if n == 2:
-        running_string = [NGram("<s>")]
+        running_string = ["<s>"]
     elif n == 3:
-        running_string = [NGram("< >"), NGram("<s>")]
-    while running_string[-1] != NGram("</s>"):
-        running_string.append(generate_n_minus_1_gram(running_string[-1] ) )  # Update accordingly when fitting for n > 2
-    result_string = ""
-    for ngram in running_string:
-        if ngram != NGram("<s>") and ngram != NGram("</s>") and ngram != NGram("< >"):
-            result_string += ngram.tokens[0]
-    return result_string
+        running_string = ["< >", "<s>"]
+    elif n == 4:
+        running_string = ["</s>", "< >", "<s>"]
+    while running_string[-1] != "</s>":
+        n_minus_1 = []
+        for i in range(n - 1):
+            n_minus_1.append(running_string[len(running_string) - n + 1 + i] )
+        running_string.append(generate_from_n_minus_1(n_minus_1) )  # Update accordingly when fitting for n > 2
+    return "".join(running_string).replace("<s>","").replace("</s>","").replace("< >","")
 
 
 # Generates a string of words lengthening parameter
@@ -112,7 +114,7 @@ def clean_line(line):
     return " " + line.replace(",", "").replace(".", "").lower().replace("\n", "").replace("'", "").strip(" ") + " "
 
 
-# Tokenizes a sentence according to token type
+# Tokenizes a sentence according to token type, returns an array of strings
 def tokenize(line):
     array = []
     for index in range(len(line)):
@@ -141,7 +143,7 @@ def print_all_data():
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     # CHANGE THIS FOR DATASET SIZE
-    test_set = 2
+    test_set = 10
 
     if test_set == 0:
         input_file = "lipsum_110.txt"
@@ -154,7 +156,6 @@ if __name__ == '__main__':
     else:
         input_file = "test.txt"
 
-    process(input_file, 2)
+    process(input_file, 4)
     print_all_data()
-    print(generate_random_word() )
-    # print(generate_random_sentence(100) )
+    print(generate_random_sentence(100) )
